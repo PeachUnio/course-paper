@@ -63,7 +63,39 @@ def sort_by_category(transactions, card_number, input_date, period="M"):
     sorted_cash = sorted(cash_transfers.items(), key=lambda x: x[1], reverse=True)
     cash_result = [{"category": k, "amount": v} for k, v in sorted_cash]
 
-    # Формируем итоговую структуру
     result = {"total_amount": round(total_expenses, 2), "main": top_main, "transfers_and_cash": cash_result}
+
+    return json.dumps(result, ensure_ascii=False, indent=2, default=str)
+
+def sorted_by_receipt(transactions, card_number, input_date, period="M"):
+    """Функция, которая сортирует поступления на карту"""
+
+    start_date, input_date_dt = sort_by_date(input_date, period)
+
+    filtered_transactions = [
+        t
+        for t in transactions
+        if (
+                t["Номер карты"] == f"*{str(card_number)[-4:]}"
+                and t["Статус"] == "OK"
+                and t["Сумма операции"] > 0
+                and start_date <= datetime.strptime(t["Дата операции"].split()[0], "%d.%m.%Y").date() <= input_date_dt
+        )
+    ]
+
+    categories = defaultdict(int)
+    total_expenses = 0
+
+    for t in filtered_transactions:
+        amount = int(t["Сумма операции"])
+        category = t["Категория"]
+
+        categories[category] += amount
+        total_expenses += amount
+
+    sorted_categories = sorted(categories.items(), key=lambda x: x[1], reverse=True)
+    category_result = [{"category": k, "amount": v} for k, v in sorted_categories]
+
+    result = {"total_amount": total_expenses, "main": category_result}
 
     return json.dumps(result, ensure_ascii=False, indent=2, default=str)
