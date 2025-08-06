@@ -1,8 +1,12 @@
 import json
+import os
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-# from src.utils import reading_excel_file
+import requests
+from dotenv import load_dotenv
+
+from src.utils import load_users_settings, reading_excel_file
 
 
 def sort_by_date(input_day, period="M"):
@@ -67,6 +71,7 @@ def sort_by_category(transactions, card_number, input_date, period="M"):
 
     return json.dumps(result, ensure_ascii=False, indent=2, default=str)
 
+
 def sorted_by_receipt(transactions, card_number, input_date, period="M"):
     """Функция, которая сортирует поступления на карту"""
 
@@ -76,10 +81,10 @@ def sorted_by_receipt(transactions, card_number, input_date, period="M"):
         t
         for t in transactions
         if (
-                t["Номер карты"] == f"*{str(card_number)[-4:]}"
-                and t["Статус"] == "OK"
-                and t["Сумма операции"] > 0
-                and start_date <= datetime.strptime(t["Дата операции"].split()[0], "%d.%m.%Y").date() <= input_date_dt
+            t["Номер карты"] == f"*{str(card_number)[-4:]}"
+            and t["Статус"] == "OK"
+            and t["Сумма операции"] > 0
+            and start_date <= datetime.strptime(t["Дата операции"].split()[0], "%d.%m.%Y").date() <= input_date_dt
         )
     ]
 
@@ -99,3 +104,33 @@ def sorted_by_receipt(transactions, card_number, input_date, period="M"):
     result = {"total_amount": total_expenses, "main": category_result}
 
     return json.dumps(result, ensure_ascii=False, indent=2, default=str)
+
+
+def checking_exchange_rate():
+    """Функция, которая проверяет курс валют из настроек пользователя"""
+    try:
+        settings = load_users_settings().get("user_currencies", [])
+
+        if not settings:
+            return "Настройки не добавлены"
+
+        load_dotenv()
+        api_key = os.getenv("API_CURRENCIES")
+        if not api_key:
+            return "API ключ не найден"
+
+        url = "https://api.apilayer.com/exchangerates_data/latest"
+        headers = {"apikey": api_key}
+        params = {"base": "RUB", "symbols": ",".join(settings)}
+
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+
+        data = response.json()
+
+        rates = data.get("rates", {})
+        result = [{"currency": curr, "rate": round(1 / rate, 2)} for curr, rate in rates.items()]
+        return json.dumps(result, ensure_ascii=False, indent=2, default=str)
+
+    except Exception:
+        return "Произошла ошибка"
