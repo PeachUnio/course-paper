@@ -1,8 +1,10 @@
-from unittest.mock import patch
+import json
+import unittest
+from unittest.mock import mock_open, patch
 
 import pandas as pd
 
-from src.utils import reading_excel_file
+from src.utils import load_users_settings, reading_excel_file
 
 
 @patch("pandas.read_excel")
@@ -25,3 +27,20 @@ def test_reading_excel_file_error(mock_read_excel):
     mock_read_excel.side_effect = Exception("NotFound")
     result = reading_excel_file("error.csv")
     assert result == "Поизошла ошибка NotFound"
+
+
+class TestLoadUsersSettings(unittest.TestCase):
+
+    def test_load_users_settings(self):
+        test_data = {'user_currencies': ["USD", "EUR"], 'user_stocks': ["AAPL", "AMZN"]}
+
+        with patch("builtins.open", mock_open(read_data=json.dumps(test_data))) as mock_file:
+            with patch("json.loads", return_value=test_data):
+                result = load_users_settings()
+
+                self.assertEqual(result, test_data)
+
+    def test_load_users_settings_error(self):
+        with patch("builtins.open", side_effect=FileNotFoundError):
+            result = load_users_settings()
+            self.assertEqual(result, "Поизошла ошибка")
