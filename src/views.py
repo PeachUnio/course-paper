@@ -134,3 +134,40 @@ def checking_exchange_rate():
 
     except Exception:
         return "Произошла ошибка"
+
+
+def checking_stock_prices():
+    """Функция, которая проверяет акции из настроек пользователя"""
+    settings = load_users_settings().get("user_stocks", [])
+
+    if not settings:
+        return "Настройки не добавлены"
+
+    load_dotenv()
+    api_key = os.getenv("API_STOCK")
+    if not api_key:
+        return "API ключ не найден"
+
+    results = []
+
+    url = "https://www.alphavantage.co/query"
+    # бесплатно можно сделать только 5 запросов
+    for stock in settings:
+        try:
+            params = {
+                'function': 'GLOBAL_QUOTE',
+                'symbol': stock,
+                'apikey': api_key
+            }
+            response = requests.get(url, params=params)
+
+            results.append({
+                "stock": stock,
+                "price": float(response.json()['Global Quote']['05. price'])
+            })
+
+        except Exception:
+            return "Произошла ошибка"
+    return json.dumps(results, ensure_ascii=False, indent=2, default=str)
+
+print(checking_stock_prices())
