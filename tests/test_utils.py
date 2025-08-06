@@ -32,7 +32,7 @@ def test_reading_excel_file_error(mock_read_excel):
 class TestLoadUsersSettings(unittest.TestCase):
 
     def test_load_users_settings(self):
-        test_data = {'user_currencies': ["USD", "EUR"], 'user_stocks': ["AAPL", "AMZN"]}
+        test_data = {"user_currencies": ["USD", "EUR"], "user_stocks": ["AAPL", "AMZN"]}
 
         with patch("builtins.open", mock_open(read_data=json.dumps(test_data))) as mock_file:
             with patch("json.loads", return_value=test_data):
