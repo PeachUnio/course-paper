@@ -3,7 +3,7 @@ import unittest
 from datetime import date
 from unittest.mock import Mock, patch
 
-from src.views import checking_exchange_rate, sort_by_date
+from src.views import checking_exchange_rate, sort_by_date, checking_stock_prices
 
 
 class TestSortByDate(unittest.TestCase):
@@ -48,9 +48,44 @@ class TestCheckingExchangeRate(unittest.TestCase):
             mock_get.assert_called_once()
 
     def test_checking_exchange_rate_error(self):
-        with patch.dict("os.environ", {"API_CURRENCIES": ""}), patch("src.utils.load_users_settings") as mock_load:
+        with patch.dict("os.environ", {"API_CURRENCIES": ""}), \
+             patch("src.utils.load_users_settings") as mock_load:
 
             mock_load.return_value = {"user_currencies": ["USD", "EUR"]}
             result = checking_exchange_rate()
 
             assert result == "API ключ не найден"
+
+    def test_checking_stock_prices(self):
+        with (
+            patch.dict("os.environ", {"API_STOCK": "test_key"}),
+            patch("src.utils.load_users_settings") as mock_load,
+            patch("requests.get") as mock_get,
+        ):
+
+            mock_load.return_value = {"user_stocks": ["AAPL"]}
+            mock_response = Mock()
+            mock_response.json.return_value = {
+            "Global Quote": {
+                "05. price": "175.50"
+            }
+        }
+            mock_response.raise_for_status.return_value = None
+            mock_get.return_value = mock_response
+
+            result = checking_stock_prices()
+            print(result)
+
+            assert result == '[\n  {\n    "stock": "AAPL",\n    "price": 175.5\n  }\n]'
+
+            mock_get.assert_called_once()
+
+    def test_checking_stock_prices_error(self):
+        with patch.dict("os.environ", {"API_STOCK": ""}), \
+             patch("src.utils.load_users_settings") as mock_load:
+
+            mock_load.return_value = {"user_stocks": ["AAPL"]}
+            result = checking_stock_prices()
+
+            assert result == "API ключ не найден"
+
