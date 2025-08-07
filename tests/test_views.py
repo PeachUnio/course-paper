@@ -3,7 +3,7 @@ import unittest
 from datetime import date
 from unittest.mock import Mock, patch
 
-from src.views import checking_exchange_rate, sort_by_date, checking_stock_prices
+from src.views import checking_exchange_rate, checking_stock_prices, sort_by_date
 
 
 class TestSortByDate(unittest.TestCase):
@@ -48,8 +48,7 @@ class TestCheckingExchangeRate(unittest.TestCase):
             mock_get.assert_called_once()
 
     def test_checking_exchange_rate_error(self):
-        with patch.dict("os.environ", {"API_CURRENCIES": ""}), \
-             patch("src.utils.load_users_settings") as mock_load:
+        with patch.dict("os.environ", {"API_CURRENCIES": ""}), patch("src.utils.load_users_settings") as mock_load:
 
             mock_load.return_value = {"user_currencies": ["USD", "EUR"]}
             result = checking_exchange_rate()
@@ -65,11 +64,7 @@ class TestCheckingExchangeRate(unittest.TestCase):
 
             mock_load.return_value = {"user_stocks": ["AAPL"]}
             mock_response = Mock()
-            mock_response.json.return_value = {
-            "Global Quote": {
-                "05. price": "175.50"
-            }
-        }
+            mock_response.json.return_value = {"Global Quote": {"05. price": "175.50"}}
             mock_response.raise_for_status.return_value = None
             mock_get.return_value = mock_response
 
@@ -81,11 +76,9 @@ class TestCheckingExchangeRate(unittest.TestCase):
             mock_get.assert_called_once()
 
     def test_checking_stock_prices_error(self):
-        with patch.dict("os.environ", {"API_STOCK": ""}), \
-             patch("src.utils.load_users_settings") as mock_load:
+        with patch.dict("os.environ", {"API_STOCK": ""}), patch("src.utils.load_users_settings") as mock_load:
 
             mock_load.return_value = {"user_stocks": ["AAPL"]}
             result = checking_stock_prices()
 
             assert result == "API ключ не найден"
-
