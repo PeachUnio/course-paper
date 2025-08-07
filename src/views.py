@@ -10,7 +10,7 @@ from src.utils import load_users_settings, reading_excel_file
 
 
 def sort_by_date(input_day, period="M"):
-    """Функция, принимающая на вход дату и периуд и возвращающаяя диапозон дат за этот периуд"""
+    """Функция, принимающая на вход дату и период и возвращающая диапазон дат за этот период"""
     date = datetime.strptime(input_day, "%d.%m.%Y")
 
     if period == "W":
