@@ -1,9 +1,9 @@
-from functools import wraps
-from datetime import datetime
 import json
-from src.utils import reading_excel_file
+from datetime import datetime
+from functools import wraps
 
 
+# Декоратор, который записывает результаты функции в заданный файл или создает новый
 def write_reports(filename=None):
     def wrapper(func):
         @wraps(func)
@@ -18,8 +18,11 @@ def write_reports(filename=None):
                 with open(file_to_write, "a+", encoding="utf-8") as f:
                     f.write(f"Произошла ошибка: {str(e)}\n")
                 raise
+
         return inner
+
     return wrapper
+
 
 def spending_by_category(transactions, card_number, category, date=None):
     """Функция возвращает траты по заданной категории за последние три месяца (от переданной даты)"""

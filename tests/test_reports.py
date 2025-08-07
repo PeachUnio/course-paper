@@ -1,12 +1,15 @@
-from unittest.mock import patch, mock_open
-import pytest
 import json
-from src.reports import write_reports, spending_by_category
+from unittest.mock import mock_open, patch
+
+import pytest
+
+from src.reports import spending_by_category, write_reports
 
 
 def test_write_reports():
     mock_file = mock_open()
     with patch("builtins.open", mock_file):
+
         @write_reports("test_file.txt")
         def test_func():
             return "Тестовые данные"
@@ -16,9 +19,11 @@ def test_write_reports():
     mock_file.assert_called_once_with("test_file.txt", "a+", encoding="utf-8")
     mock_file().write.assert_called_once_with("Тестовые данные\n")
 
+
 def test_write_reports_new_file():
     mock_file = mock_open()
     with patch("builtins.open", mock_file):
+
         @write_reports()
         def test_func():
             return "Тестовые данные"
@@ -28,9 +33,11 @@ def test_write_reports_new_file():
     mock_file.assert_called_once_with("doc_for_reports.txt", "a+", encoding="utf-8")
     mock_file().write.assert_called_once_with("Тестовые данные\n")
 
+
 def test_write_reports_error():
     mock_file = mock_open()
     with patch("builtins.open", mock_file):
+
         @write_reports("test_file.txt")
         def test_func():
             raise ValueError("Тестовая ошибка")
@@ -42,9 +49,11 @@ def test_write_reports_error():
 
         mock_file().write.assert_called_once_with("Произошла ошибка: Тестовая ошибка\n")
 
+
 def test_write_reports_error_new_file():
     mock_file = mock_open()
     with patch("builtins.open", mock_file):
+
         @write_reports("doc_for_reports.txt")
         def test_func():
             raise ValueError("Тестовая ошибка")
@@ -55,6 +64,7 @@ def test_write_reports_error_new_file():
             pass
 
         mock_file().write.assert_called_once_with("Произошла ошибка: Тестовая ошибка\n")
+
 
 @pytest.fixture
 def test_data():
@@ -109,6 +119,7 @@ def test_data():
         },
     ]
 
+
 @pytest.fixture
 def test_result():
     return [
@@ -127,16 +138,19 @@ def test_result():
             "Сумма операции": -776.9,
             "Категория": "Красота",
             "Описание": "Подружка",
-        }
+        },
     ]
+
 
 def test_spending_by_category(test_data, test_result):
     result = spending_by_category(test_data, 21123317197, "Красота", "25.07.2021")
     assert result == json.dumps(test_result, ensure_ascii=False, indent=2, default=str)
 
+
 def test_spending_by_category_void(test_data):
     result = spending_by_category(test_data, 21123317197, "Красота")
     assert result == "Не найдено трат по заданным условиям"
+
 
 @pytest.fixture
 def test_error_data():
@@ -152,8 +166,9 @@ def test_error_data():
             "Сумма операции": -776.9,
             "Категория": "Красота",
             "Описание": "Подружка",
-        }
+        },
     ]
+
 
 def test_spending_by_category_error(test_error_data):
     result = spending_by_category(test_error_data, 4473773748, "Нет")
