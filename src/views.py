@@ -154,20 +154,14 @@ def checking_stock_prices():
     # бесплатно можно сделать только 5 запросов
     for stock in settings:
         try:
-            params = {
-                'function': 'GLOBAL_QUOTE',
-                'symbol': stock,
-                'apikey': api_key
-            }
+            params = {"function": "GLOBAL_QUOTE", "symbol": stock, "apikey": api_key}
             response = requests.get(url, params=params)
 
-            results.append({
-                "stock": stock,
-                "price": float(response.json()['Global Quote']['05. price'])
-            })
+            results.append({"stock": stock, "price": float(response.json()["Global Quote"]["05. price"])})
 
         except Exception:
             return "Произошла ошибка"
     return json.dumps(results, ensure_ascii=False, indent=2, default=str)
+
 
 print(checking_stock_prices())
