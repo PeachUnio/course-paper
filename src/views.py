@@ -162,6 +162,3 @@ def checking_stock_prices():
         except Exception:
             return "Произошла ошибка"
     return json.dumps(results, ensure_ascii=False, indent=2, default=str)
-
-
-print(checking_stock_prices())
